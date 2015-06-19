@@ -116,8 +116,10 @@ int extractor::run(const ExtractorConfig &extractor_config)
         SimpleLogger().Write() << "Parsing in progress..";
         TIMER_START(parsing);
 
+        lua_State *segment_state = scripting_environment.get_lua_state();
+
         luabind::call_function<void>(
-            scripting_environment.get_lua_state(), "source_function");
+            segment_state, "source_function");
 
         std::string generator = header.get("generator");
         if (generator.empty())
@@ -239,11 +241,9 @@ int extractor::run(const ExtractorConfig &extractor_config)
             return 1;
         }
 
-        lua_State *local_state = scripting_environment.get_lua_state();
-
         extraction_containers.PrepareData(extractor_config.output_file_name,
                                           extractor_config.restriction_file_name,
-                                          local_state);
+                                          segment_state);
         TIMER_STOP(extracting);
         SimpleLogger().Write() << "extraction finished after " << TIMER_SEC(extracting) << "s";
         SimpleLogger().Write() << "To prepare the data for routing, run: "
